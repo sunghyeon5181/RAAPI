@@ -13,19 +13,19 @@
 ```
 ## 3. 설계 방식
 ```
-### InsertData(Location data)
+InsertData(Location data)
 
-### GetRealEstateAuctionData(Location guid)
+GetRealEstateAuctionData(Location guid)
 -- input : 좌표
 -- output : 해당 좌표 경매 데이터들
 (경매 데이터 타입 결정 필요)
 
-### GetRealEstateTradeData(Location guid) 
+GetRealEstateTradeData(Location guid) 
 --input : 좌표
 --output : 해당 좌표 실거래 데이터들
 (실거래 데이터 타입 결정 필요)
 
-### CalActualValue(Int realTradeVal, Int standardVal,auctionDataType auctionData, tradeDataType tradeData)
+CalActualValue(Int realTradeVal, Int standardVal,auctionDataType auctionData, tradeDataType tradeData)
 --input : 실거래가격 , 표준 가격, 경매 데이터, 실거래 데이터
 --output : 적정 가격
 ```
