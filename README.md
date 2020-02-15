@@ -7,11 +7,10 @@
 
 ### python을 사용하여 공공 실거래가 API를 이용합니다.
 ### 아래의 모듈을 import하여야 합니다.
-
-
+```
   pip install numpy
   pip install tkinter
-
+```
 ## 3. 설계 방식
 
 ### InsertData(Location data)
