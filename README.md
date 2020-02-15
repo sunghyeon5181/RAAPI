@@ -10,6 +10,9 @@
 
 ## 3. 설계 방식
 
+
+### InsertData(Location data)
+
 ### GetRealEstateAuctionData(Location guid)
 -- input : 좌표
 -- output : 해당 좌표 경매 데이터들
