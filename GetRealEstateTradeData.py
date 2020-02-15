@@ -1,6 +1,5 @@
 from base64 import encode, decode
 from urllib.request import Request, urlopen
-
 from numpy.core import unicode
 
 
@@ -24,6 +23,12 @@ request.get_method = lambda: 'GET'
 response_body = urlopen(request).read()
 print(response_body)
 
+
+# 코드값 가져오기
+
+
+
+# 진짜 URL 던지기
 
 code = response_body 중에 지역코드를 짤라냄
 
