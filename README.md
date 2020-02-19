@@ -11,6 +11,11 @@
   pip install numpy
   pip install tkinter
 ```
+### python crawling 사용하는 모듈
+```
+  pip install selenium
+```
+
 ## 3. 설계 방식
 ```
 Void InsertData(Location data)
