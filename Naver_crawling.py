@@ -64,7 +64,7 @@ def Naver_crawling_id():
                 next_number_list.append(i.text)
             del next_number_list[-1]
             del next_number_list[-1]
-            print(len(next_number_list))
+            print(next_number_list)
 
             # 각 페이지(30개씩 이루어져있는)의 물건 데이터 id코드 가져오기
             for row_2 in range(1,len(next_number_list)+2): # 1~10
@@ -79,12 +79,16 @@ def Naver_crawling_id():
                 # 1~10 번 까지 한번씩 클릭 하기
                 if row_2 == len(next_number_list)+1:
                     pass
+
                 else:
-                    next_number = driver.find_element_by_css_selector(f'#page_navi > div > a:nth-child({row_2 +1})')
+                    next_number = driver.find_element_by_css_selector(f'#page_navi > div.pagnavi > a:nth-child({row_2 +1})')
+                    print(row_2+1)
+                    print('-------------')
                     next_number.click()
             # "다음" 버튼 클릭하기
             Daum_page = driver.find_element_by_css_selector('#page_navi > div > a.next')
             Daum_page.click()
+
 
         # 마지막 페이지 확인(마지막 페이지 "처음","이전" 이존재하는)
         elif row_1 == Daum_click_count+1:
@@ -100,6 +104,8 @@ def Naver_crawling_id():
             # 각 페이지(30개씩 이루어져있는) 물건의 id 가져오기
             for row_2 in range(1,len(next_number_list)+2):
                 id_code = driver.find_elements_by_css_selector('#tb > tr')  # 물건 30개
+                print(row_2)
+                print('------------')
                 for row_3 in id_code:
                     data_tag = row_3.find_element_by_css_selector("td.area > a")
                     code = data_tag.get_attribute('onclick')
@@ -146,7 +152,6 @@ def Naver_crawling_id():
                 if next_number_atag[count] == 12:
                     pass
                 else:
-
                     next_number = driver.find_element_by_css_selector(f'#page_navi > div > a:nth-child({next_number_atag[count]})')
                     next_number.click()
                     count = count + 1
@@ -213,14 +218,27 @@ def Naver_crawling_data(id_list, kinds_name_list):
 
         # 물건 종류가 위의 물건 종류 name에 있으면 그 리스트 index를 받아서 total 리스트 2차원 공간에 입력(물건종류 순서랑 같게 나열 하고자)
         kinds = kind.text
+        print(kinds)
         kinds_1 = kinds.split('(')
-        index = kinds_name_list.index(kinds_1[0])
-        total_data_list[index].append(data_list)
+
+        if kinds_1[0] =="다세대":
+            index = kinds_name_list.index("빌라등")
+            total_data_list[index].append(data_list)
+        elif kinds_1[0] =="아파트형공장":
+            index = kinds_name_list.index("APT공장")
+            total_data_list[index].append(data_list)
+        elif kinds_1[0] =="숙박":
+            index = kinds_name_list.index("콘도등")
+            total_data_list[index].append(data_list)
+        else:
+            index = kinds_name_list.index(kinds_1[0])
+            total_data_list[index].append(data_list)
+
         count_1 = count_1 + 1
         print(count_1)
         print('-------------')
     return total_data_list
 
 page_code, total_kinds = Naver_crawling_id()
-# total = Naver_crawling_data(page_code, total_kinds)
-# print(total)
+total = Naver_crawling_data(page_code, total_kinds)
+print(total)
