@@ -17,6 +17,10 @@
 ```
 
 ## 3. 설계 방식
+
+네이버 크롤링을 통하여 대부분의 정보를 가져 옵니다. 
+* Selenium  사용법 정리 
+
 ```
 Void InsertData(Location data)
 
