@@ -11,7 +11,7 @@
   pip install numpy
   pip install tkinter
 
-
+  python -m pip install mysql-connector
   pip install PyMySQL
 ```
 ### python crawling 사용하는 모듈
