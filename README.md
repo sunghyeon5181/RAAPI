@@ -10,6 +10,9 @@
 ```
   pip install numpy
   pip install tkinter
+
+
+  pip install PyMySQL
 ```
 ### python crawling 사용하는 모듈
 ```
@@ -20,6 +23,7 @@
 
 네이버 크롤링을 통하여 대부분의 정보를 가져 옵니다. 
 * Selenium  사용법 정리 
+
 
 ```
 Void InsertData(Location data)
