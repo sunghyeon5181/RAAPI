@@ -1,3 +1,16 @@
+# 20.03.01
+# 
+# Anthor : sunghyeon5181, nicesick
+# 
+# To-Do list
+# 
+# 1.    tr 안에 다시 table 이 존재하는 경우
+#       조건문을 통해 정확한 데이터 값 입력
+# 
+# 2.    2번째 테이블 데이터 파싱
+# 
+# 3.    경매 번호, 법원 위치 등 헤드라인에 있는 데이터도 파싱
+
 from selenium import webdriver
 import time
 
@@ -170,12 +183,14 @@ def Naver_crawling_id():
 def Naver_crawling_data(id_list, kinds_name_list):
     # 전체 데이터 입력 리스트(3차원)
     total_data_list = []
+    total_data_dict_list = []
     driver = webdriver.Chrome()
 
     # 물건 종류 만큼 리스트 생성(아파트 => total_data_list[0] , 주택 => total_data_list[1], .....)
     for i in kinds_name_list:
         data_holl = []
         total_data_list.append(data_holl)
+        total_data_dict_list.append(data_holl)
 
     # 물건 data 리스트 순서
     data_order = ['소재지', '물건종류', '매각물건', '감정가', '건물면적','사건접수','최저가','대지권','입찰방법','보증금','진행횟수','매각일','최저매각가격']
@@ -189,20 +204,33 @@ def Naver_crawling_data(id_list, kinds_name_list):
         # id 페이지에 데이터 리스트
         data_list = []
 
+        # id 페이지에 데이터 딕셔너리
+        data_dict = {}
+
         time.sleep(1)
         # 큰 body 태그
         body_tag = driver.find_elements_by_css_selector('#content2 > div > div.content_wrap > div.content > div.section_tbl')
         count_2 = 0
+
         for row_1 in body_tag:
             count_2 = count_2 + 1
             # class:section_tbl 첫번쨰 테이플
             if count_2 == 1:
                 first_tbody = row_1.find_element_by_css_selector('table > tbody')
                 # to do : th DB구조로 가져오기 + 실제 DB 만들어서 가져온값 넣기
-
                 # 테이블 구조를 2중으로 해야할듯 더 복잡할수도 있을듯
 
+                tr_lists = first_tbody.find_elements_by_css_selector('tr')
+
+                for tr_list in tr_lists:
+                    th_lists = tr_list.find_elements_by_css_selector('th')
+                    td_lists = tr_list.find_elements_by_css_selector('td')
+
+                    for th_list, td_list in zip(th_lists, td_lists):
+                        data_dict[th_list.text] = td_list.text
+
                 # 주소(table 첫번쨰 라인)
+                
                 address = first_tbody.find_element_by_css_selector('tr:nth-child(1) > td > strong')
                 data_list.append(address.text)
 
@@ -269,22 +297,28 @@ def Naver_crawling_data(id_list, kinds_name_list):
 
         if kinds_1[0] =="다세대":
             index = kinds_name_list.index("빌라등")
-            total_data_list[index].append(data_list)
+
         elif kinds_1[0] =="아파트형공장":
             index = kinds_name_list.index("APT공장")
-            total_data_list[index].append(data_list)
+
         elif kinds_1[0] =="숙박":
             index = kinds_name_list.index("콘도등")
-            total_data_list[index].append(data_list)
+
         else:
             index = kinds_name_list.index(kinds_1[0])
-            total_data_list[index].append(data_list)
+        
+        total_data_list[index].append(data_list)
+        total_data_dict_list[index].append(data_dict)
 
         count_1 = count_1 + 1
+
         print(count_1)
         print('-------------')
-    return total_data_list
+
+    return total_data_list, total_data_dict_list
 
 page_code, total_kinds = Naver_crawling_id()
-total = Naver_crawling_data(page_code, total_kinds)
+total, total_dict = Naver_crawling_data(page_code, total_kinds)
+
 print(total)
+print(total_dict)
