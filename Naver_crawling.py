@@ -178,7 +178,7 @@ def Naver_crawling_data(id_list, kinds_name_list):
         total_data_list.append(data_holl)
 
     # 물건 data 리스트 순서
-    data_order = ['소재지', '물건종류', '매각물건', '감정가', '건물면적','사건접수','최저가','대지권','입찰방법','보증금']
+    data_order = ['소재지', '물건종류', '매각물건', '감정가', '건물면적','사건접수','최저가','대지권','입찰방법','보증금','진행횟수','매각일','최저매각가격']
 
     count_1 = 0
     for row_1 in id_list:
@@ -241,7 +241,19 @@ def Naver_crawling_data(id_list, kinds_name_list):
                 guarantee = guarantee_price.text
                 guarantee_1 = guarantee.split(')')
                 data_list.append(guarantee_1[1])
-                # content2 > div > div.content_wrap > div.content > div:nth-child(2) > table > tbody > tr:nth-child(4) > td:nth-child(4)
+
+
+                # 진행 횟수, 매각기일, 최저매각가격(table 다섯번째 라인)
+                table_fifth  = first_tbody.find_element_by_css_selector('table > tbody > tr:nth-child(5) > td:nth-child(2) > table > tbody > tr.last')
+
+                progress = table_fifth.find_element_by_css_selector('td:nth-child(1)') # 진행횟수
+                data_list.append(progress.text)
+                sale_day = table_fifth.find_element_by_css_selector('td:nth-child(2)') # 매각기일
+                data_list.append(sale_day.text)
+                min_sale_price = table_fifth.find_element_by_css_selector('td.price') # 최저매각가격
+                data_list.append(min_sale_price.text)
+
+
             elif count_2 == 2:
                 pass
 
