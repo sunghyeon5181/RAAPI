@@ -34,3 +34,7 @@ TradeData GetRealEstateTradeData(Location guid)
 
 RightValue CalActualValue(Int realTradeVal, Int standardVal,auctionDataType auctionData, tradeDataType tradeData)
 ```
+
+### 4.번외 코드
+
+크롤링한 데이터를 이용해서 블로그에 데이터를 찍어 주는 프로그램 작성
