@@ -4,15 +4,15 @@
 # 
 # To-Do list
 # 
-# 1.    tr 안에 다시 table 이 존재하는 경우
-#       조건문을 통해 정확한 데이터 값 입력
+# 1.  2번째 테이플 감정가 가져오기(각 물건 종류에 따라 변경)
+#
+# 2.  sql에 데이터 입력 방법
 # 
-# 2.    2번째 테이블 데이터 파싱
-# 
-# 3.    경매 번호, 법원 위치 등 헤드라인에 있는 데이터도 파싱
+# 3.
 
 from selenium import webdriver
 import time
+import pymysql
 
 def Naver_crawling_id():
 
@@ -61,7 +61,6 @@ def Naver_crawling_id():
         last_number_int = int(last_number_str.text)
         # 10개 기준으로 다음 클릭 해야됨 그래서 마지막 number 10으로 나눔
         Daum_click_count = last_number_int // 10
-
         # 데이터 가져오기 위해서 "처음" 버튼 체크
         page_first = driver.find_element_by_css_selector('#page_navi > div > a.pre_end')
         page_first.click()
@@ -104,76 +103,125 @@ def Naver_crawling_id():
             Daum_page = driver.find_element_by_css_selector('#page_navi > div > a.next')
             Daum_page.click()
 
-
         # 마지막 페이지 확인(마지막 페이지 "처음","이전" 이존재하는)
-        elif row_1 == Daum_click_count+1:
-            # "처음","이전" 지우기
+        elif row_1 == Daum_click_count+1 :
             last_page = driver.find_elements_by_css_selector('#page_navi > div > a')
-            next_number_list = []
+            last_page_len = []
             for i in last_page:
-                next_number_list.append(i.text)
-            del next_number_list[0]
-            del next_number_list[0]
+                last_page_len.append(i.text)
 
-            # 각 페이지(30개씩 이루어져있는) 물건의 id 가져오기
-            for row_2 in range(1,len(next_number_list)+2):
-                id_code = driver.find_elements_by_css_selector('#tb > tr')  # 물건 30개
-                print(row_2)
-                print('------------')
-                for row_3 in id_code:
-                    data_tag = row_3.find_element_by_css_selector("td.area > a")
-                    code = data_tag.get_attribute('onclick')
-                    code_1 = code.split(',')
-                    code_2 = code_1[1].strip(';)')  # type = str
-                    page_id.append(int(code_2))
+            # 마지막 페이지가 10의 배수인경우(중간부분에서 데이터 가져옴)
+            if len(last_page_len) == 11:
+                pass
+            else:
+                # "처음","이전" 지우기
+                last_page = driver.find_elements_by_css_selector('#page_navi > div > a')
+                next_number_list = []
+                # 페이지 번호 가져오기
+                for i in last_page:
+                    next_number_list.append(i.text)
+                del next_number_list[0]
+                del next_number_list[0]
 
-                # 다음 페이지로 이동(ex 12,13,14,15,16 으로 이루어진 마지막)
-                if row_2 == len(next_number_list)+1:
-                    pass
-                else:
-                    # "처음", "이전" 존재함
-                    next_number = driver.find_element_by_css_selector(f'#page_navi > div > a:nth-child({row_2 + 3})')
-                    next_number.click()
+                # 각 페이지(30개씩 이루어져있는) 물건의 id 가져오기
+                for row_2 in range(1,len(next_number_list)+2):
+                    id_code = driver.find_elements_by_css_selector('#tb > tr')  # 물건 30개
+                    for row_3 in id_code:
+                        data_tag = row_3.find_element_by_css_selector("td.area > a")
+                        code = data_tag.get_attribute('onclick')
+                        code_1 = code.split(',')
+                        code_2 = code_1[1].strip(';)')  # type = str
+                        page_id.append(int(code_2))
+
+                    # 다음 페이지로 이동(ex 12,13,14,15,16 으로 이루어진 마지막)
+                    #마지막 페이지일때 pass(다음페이지가 없기 때문)
+                    if row_2 == len(next_number_list)+1:
+                        pass
+                    else:
+                        #a-tag에 "처음", "이전" 존재하기 때문에 1,2 삭제하고 현재페이지 삭제 하기 떄문에 +3
+                        next_number = driver.find_element_by_css_selector(f'#page_navi > div > a:nth-child({row_2 + 3})')
+                        next_number.click()
 
 
         # 중간("처음"과"이전" 존재 "다음","끝" 존재  )에 이루어져 있는 페이지 입력
         else:
-            # "처음","이전","다음","끝"  삭제하기
-            middle_page = driver.find_elements_by_css_selector('#page_navi > div > a')
-            next_number_list = []
-            for i in middle_page:
-                next_number_list.append(i.text)
+            page_navi = driver.find_elements_by_css_selector('#page_navi > div > a')
+            page_class = []
+            for i in page_navi:
+                page_class.append(i.text)
 
-            del next_number_list[0]
-            del next_number_list[0]
-            # to do : "다음", "끝" if문 예외 처리
-            del next_number_list[-1]
-            del next_number_list[-1]
-            count=0
-            # 중간 페이지의 a-tag의 순서가 1~14 까지 있는데 (1,2 : 처음,끝  13,14 : 다음,끝)
-            # "다음" 클릭시 a-tag의 3이 클릭 되어있음
-            next_number_atag = [4, 5, 6, 7, 8, 9, 10, 11, 12]
-            for row_2 in next_number_list :
-                id_code = driver.find_elements_by_css_selector('#tb > tr')  # 물건 30개
+            # "다음" , "끝"이 있는경우
+            if len(page_class) == 13:
+                middle_page = driver.find_elements_by_css_selector('#page_navi > div > a')
+                next_number_list = []
+                for i in middle_page:
+                    next_number_list.append(i.text)
 
-                for row_3 in id_code:
-                    data_tag = row_3.find_element_by_css_selector("td.area > a")
-                    code = data_tag.get_attribute('onclick')
-                    code_1 = code.split(',')
-                    code_2 = code_1[1].strip(';)')  # type = str
-                    page_id.append(int(code_2))
+                # "처음","이전","다음","끝"  삭제하기
+                del next_number_list[0]
+                del next_number_list[0]
+                # to do : "다음", "끝" if문 예외 처리
+                del next_number_list[-1]
+                del next_number_list[-1]
+                count=0
+                # 중간 페이지 번호만 남게함 (next_number_list : 페이지 번호만 남음)
+                # "다음" 클릭시 a-tag의 3이 클릭 되어있음
+                next_number_atag = [4, 5, 6, 7, 8, 9, 10, 11, 12]
+                for row_2 in range(0,len(next_number_list)+1) :
+                    id_code = driver.find_elements_by_css_selector('#tb > tr')  # 물건 30개
+
+                    for row_3 in id_code:
+                        data_tag = row_3.find_element_by_css_selector("td.area > a")
+                        code = data_tag.get_attribute('onclick')
+                        code_1 = code.split(',')
+                        code_2 = code_1[1].strip(';)')  # type = str
+                        page_id.append(int(code_2))
+
+                    # 다음 number 읽기
+                    if count == 9:
+                        pass
+                    else:
+                        next_number = driver.find_element_by_css_selector(f'#page_navi > div > a:nth-child({next_number_atag[count]})')
+                        next_number.click()
+                        count = count + 1
+                # "다음" 클릭하기
+                Daum_page = driver.find_element_by_css_selector('#page_navi > div > a.next')
+                Daum_page.click()
+            #"다음","끝"이 없지만 마지막 페이지가 10의 배수일때
+            elif len(page_class) == 11:
+                middle_page = driver.find_elements_by_css_selector('#page_navi > div > a')
+                next_number_list = []
+                # a-tag list 만들기
+                for i in middle_page:
+                    next_number_list.append(i.text)
+
+                # "처음","이전" 삭제하기
+                del next_number_list[0]
+                del next_number_list[0]
+
+                count = 0
+                # a-tag 시작은 3 이기 떄문에
+                next_number_atag = [4, 5, 6, 7, 8, 9, 10, 11, 12]
+                # id 코드 가져오기
+                for row_2 in range(0,len(next_number_list)+1):
+                    id_code = driver.find_elements_by_css_selector('#tb > tr')  # 물건 30개
+
+                    for row_3 in id_code:
+                        data_tag = row_3.find_element_by_css_selector("td.area > a")
+                        code = data_tag.get_attribute('onclick')
+                        code_1 = code.split(',')
+                        code_2 = code_1[1].strip(';)')  # type = str
+                        page_id.append(int(code_2))
+                    #마지막 페이지 경우
+                    if count == 9:
+                        pass
+                    else:
+                        #다음페이지 클릭
+                        next_number = driver.find_element_by_css_selector(f'#page_navi > div > a:nth-child({next_number_atag[count]})')
+                        next_number.click()
+                        count = count + 1
 
 
-                # 다음 number 읽기
-                if next_number_atag[count] == 12:
-                    pass
-                else:
-                    next_number = driver.find_element_by_css_selector(f'#page_navi > div > a:nth-child({next_number_atag[count]})')
-                    next_number.click()
-                    count = count + 1
-            # "다음" 클릭하기
-            Daum_page = driver.find_element_by_css_selector('#page_navi > div > a.next')
-            Daum_page.click()
 
     page_id = list(set(page_id))
     print(len(page_id))
@@ -192,9 +240,6 @@ def Naver_crawling_data(id_list, kinds_name_list):
         total_data_list.append(data_holl)
         total_data_dict_list.append(data_holl)
 
-    # 물건 data 리스트 순서
-    data_order = ['소재지', '물건종류', '매각물건', '감정가', '건물면적','사건접수','최저가','대지권','입찰방법','보증금','진행횟수','매각일','최저매각가격']
-
     count_1 = 0
     for row_1 in id_list:
 
@@ -210,17 +255,17 @@ def Naver_crawling_data(id_list, kinds_name_list):
         time.sleep(1)
         # 큰 body 태그
         body_tag = driver.find_elements_by_css_selector('#content2 > div > div.content_wrap > div.content > div.section_tbl')
-        count_2 = 0
-
+        count = 0
         for row_1 in body_tag:
-            count_2 = count_2 + 1
+            count = count + 1
+
             # class:section_tbl 첫번쨰 테이플
-            if count_2 == 1:
-                first_tbody = row_1.find_element_by_css_selector('table > tbody')
+            if count == 1:
+                first_table = row_1.find_element_by_css_selector('table > tbody')
                 # to do : th DB구조로 가져오기 + 실제 DB 만들어서 가져온값 넣기
                 # 테이블 구조를 2중으로 해야할듯 더 복잡할수도 있을듯
 
-                tr_lists = first_tbody.find_elements_by_css_selector('tr')
+                tr_lists = first_table.find_elements_by_css_selector('tr')
 
                 for tr_list in tr_lists:
                     th_lists = tr_list.find_elements_by_css_selector('th')
@@ -228,64 +273,57 @@ def Naver_crawling_data(id_list, kinds_name_list):
 
                     for th_list, td_list in zip(th_lists, td_lists):
                         data_dict[th_list.text] = td_list.text
+                        data_list.append(td_list.text)
+                kind = first_table.find_element_by_css_selector('tr:nth-child(2) > td:nth-child(2)')
 
-                # 주소(table 첫번쨰 라인)
-                
-                address = first_tbody.find_element_by_css_selector('tr:nth-child(1) > td > strong')
-                data_list.append(address.text)
+            # class:section_tbl 두번째 테이플
+            elif count == 2:
+                second_table = row_1.find_element_by_css_selector('table')
 
-                # 물건종류, 매각물건, 감정가(table 두번째 라인)
-                table_second = first_tbody.find_element_by_css_selector('tr:nth-child(2)')
+                # if kind.text == '아파트':
+                #     # tbody 태그 가져오기
+                #     second_tbody = second_table.find_elements_by_css_selector('tbody > tr')
+                #     Number = 0
+                #
+                #     # tr태그 for문 입력
+                #     for row_2 in second_tbody:
+                #         Number = Number + 1
+                #
+                #         # 첫번쨰 tr태그
+                #         if Number == 1:
+                #             # "건물" 태그 가져오기
+                #             kind_first_name = row_2.find_element_by_css_selector('th')
+                #             # 건물에 대한 감점가 있을경우
+                #             if kind_first_name.text == "건물":
+                #                 # 감정가격
+                #                 building_price = row_2.find_element_by_css_selector('td.price')
+                #                 data_dict['건물 감정가격'] = building_price.text
+                #                 data_list.append(building_price.text)
+                #             else:
+                #                 pass
+                #
+                #         #두번쨰 tr태그
+                #         elif Number == 2:
+                #             # "토지" 태그 가져오기
+                #             kind_first_name = row_2.find_element_by_css_selector('th')
+                #             #토지에 대한 감점가 있을경우
+                #             if kind_first_name.text == "토지":
+                #                 land_price = row_2.find_element_by_css_selector('td.price')
+                #                 data_dict['토지 감정가격'] = land_price.text
+                #                 data_list.append(land_price.text)
+                #             else:
+                #                 pass
+                #
+                #         else:
+                #             pass
+                #
+                #
+                #
+                #
+                # else:
+                #     pass
 
-                kind = table_second.find_element_by_css_selector('td:nth-child(2)') # 물건종류
-                data_list.append(kind.text)
-                sale_article = table_second.find_element_by_css_selector('td:nth-child(4)') # 매각물건
-                data_list.append(sale_article.text)
-                connoisseur = table_second.find_element_by_css_selector('td.price') # 감정가
-                data_list.append(connoisseur.text)
-
-                # 건물면적, 사건접수, 최저가(table 세번쨰 라인)
-                table_third = first_tbody.find_element_by_css_selector('tr:nth-child(3)')
-
-                building_area = table_third.find_element_by_css_selector('td:nth-child(2)') # 건물면적
-                data_list.append(building_area.text)
-                case_reception = table_third.find_element_by_css_selector('td:nth-child(4)') # 사건접수
-                case = case_reception.text
-                case_1 = case.split('(')
-                data_list.append(case_1[0])
-                lowest_price = table_third.find_element_by_css_selector('td.price') # 최저가
-                lowest = lowest_price.text
-                lowest_1 = lowest.split(')')
-                data_list.append(lowest_1[1])
-
-                # 대지권, 입찰방법, 보증금(table 네번째 라인)
-                table_fourth = first_tbody.find_element_by_css_selector('tr:nth-child(4)')
-
-                land_area = table_fourth.find_element_by_css_selector('td:nth-child(2) > em') # 대지권
-                data_list.append(land_area.text)
-                bidding_way = table_fourth.find_element_by_css_selector('td:nth-child(4)') # 입찰방법
-                data_list.append(bidding_way.text)
-                guarantee_price = table_fourth.find_element_by_css_selector('td.price') # 보증금
-                guarantee = guarantee_price.text
-                guarantee_1 = guarantee.split(')')
-                data_list.append(guarantee_1[1])
-
-
-                # 진행 횟수, 매각기일, 최저매각가격(table 다섯번째 라인)
-                table_fifth  = first_tbody.find_element_by_css_selector('table > tbody > tr:nth-child(5) > td:nth-child(2) > table > tbody > tr.last')
-
-                progress = table_fifth.find_element_by_css_selector('td:nth-child(1)') # 진행횟수
-                data_list.append(progress.text)
-                sale_day = table_fifth.find_element_by_css_selector('td:nth-child(2)') # 매각기일
-                data_list.append(sale_day.text)
-                min_sale_price = table_fifth.find_element_by_css_selector('td.price') # 최저매각가격
-                data_list.append(min_sale_price.text)
-
-
-            elif count_2 == 2:
-                pass
-
-            elif count_2 == 3:
+            elif count == 3:
                 pass
             else:
                 pass
@@ -306,7 +344,6 @@ def Naver_crawling_data(id_list, kinds_name_list):
 
         else:
             index = kinds_name_list.index(kinds_1[0])
-        
         total_data_list[index].append(data_list)
         total_data_dict_list[index].append(data_dict)
 
@@ -319,6 +356,6 @@ def Naver_crawling_data(id_list, kinds_name_list):
 
 page_code, total_kinds = Naver_crawling_id()
 total, total_dict = Naver_crawling_data(page_code, total_kinds)
-
+print('ABCDEF')
 print(total)
-print(total_dict)
+
