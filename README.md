@@ -12,11 +12,18 @@
   pip install tkinter
 
   python -m pip install mysql-connector
-  pip install PyMySQL
+  pip install pymysql
 ```
 ### python crawling 사용하는 모듈
 ```
   pip install selenium
+```
+
+### import 모듈
+```
+  from selenium import webdriver
+  import time
+  import pymysql as py
 ```
 
 ## 3. 설계 방식
