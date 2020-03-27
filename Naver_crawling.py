@@ -12,7 +12,7 @@
 
 from selenium import webdriver
 import time
-import pymysql
+
 
 def Naver_crawling_id():
 
@@ -55,7 +55,7 @@ def Naver_crawling_id():
         # "끝" 버튼 체크
         page_end = driver.find_element_by_css_selector('#page_navi > div > a.next_end')
         page_end.click()
-        time.sleep(2)
+        time.sleep(1)
         # 마지막 number 가져오기
         last_number_str = driver.find_element_by_css_selector('#page_navi > div > strong')
         last_number_int = int(last_number_str.text)
@@ -182,6 +182,7 @@ def Naver_crawling_id():
                         pass
                     else:
                         next_number = driver.find_element_by_css_selector(f'#page_navi > div > a:nth-child({next_number_atag[count]})')
+                        print(next_number.text)
                         next_number.click()
                         count = count + 1
                 # "다음" 클릭하기
@@ -230,15 +231,16 @@ def Naver_crawling_id():
 
 def Naver_crawling_data(id_list, kinds_name_list):
     # 전체 데이터 입력 리스트(3차원)
-    total_data_list = []
-    total_data_dict_list = []
+    list_total_data = []
+    dict_total_data = []
     driver = webdriver.Chrome()
 
     # 물건 종류 만큼 리스트 생성(아파트 => total_data_list[0] , 주택 => total_data_list[1], .....)
     for i in kinds_name_list:
-        data_holl = []
-        total_data_list.append(data_holl)
-        total_data_dict_list.append(data_holl)
+        data_holl_list = []
+        data_holl_dict = []
+        list_total_data.append(data_holl_list)
+        dict_total_data.append(data_holl_dict)
 
     count_1 = 0
     for row_1 in id_list:
@@ -275,54 +277,10 @@ def Naver_crawling_data(id_list, kinds_name_list):
                         data_dict[th_list.text] = td_list.text
                         data_list.append(td_list.text)
                 kind = first_table.find_element_by_css_selector('tr:nth-child(2) > td:nth-child(2)')
-
+                del data_dict['매각\n기일내역']
             # class:section_tbl 두번째 테이플
             elif count == 2:
                 second_table = row_1.find_element_by_css_selector('table')
-
-                # if kind.text == '아파트':
-                #     # tbody 태그 가져오기
-                #     second_tbody = second_table.find_elements_by_css_selector('tbody > tr')
-                #     Number = 0
-                #
-                #     # tr태그 for문 입력
-                #     for row_2 in second_tbody:
-                #         Number = Number + 1
-                #
-                #         # 첫번쨰 tr태그
-                #         if Number == 1:
-                #             # "건물" 태그 가져오기
-                #             kind_first_name = row_2.find_element_by_css_selector('th')
-                #             # 건물에 대한 감점가 있을경우
-                #             if kind_first_name.text == "건물":
-                #                 # 감정가격
-                #                 building_price = row_2.find_element_by_css_selector('td.price')
-                #                 data_dict['건물 감정가격'] = building_price.text
-                #                 data_list.append(building_price.text)
-                #             else:
-                #                 pass
-                #
-                #         #두번쨰 tr태그
-                #         elif Number == 2:
-                #             # "토지" 태그 가져오기
-                #             kind_first_name = row_2.find_element_by_css_selector('th')
-                #             #토지에 대한 감점가 있을경우
-                #             if kind_first_name.text == "토지":
-                #                 land_price = row_2.find_element_by_css_selector('td.price')
-                #                 data_dict['토지 감정가격'] = land_price.text
-                #                 data_list.append(land_price.text)
-                #             else:
-                #                 pass
-                #
-                #         else:
-                #             pass
-                #
-                #
-                #
-                #
-                # else:
-                #     pass
-
             elif count == 3:
                 pass
             else:
@@ -344,18 +302,17 @@ def Naver_crawling_data(id_list, kinds_name_list):
 
         else:
             index = kinds_name_list.index(kinds_1[0])
-        total_data_list[index].append(data_list)
-        total_data_dict_list[index].append(data_dict)
 
+
+        list_total_data[index].append(data_list)
+        dict_total_data[index].append(data_dict)
         count_1 = count_1 + 1
-
         print(count_1)
         print('-------------')
 
-    return total_data_list, total_data_dict_list
+
+    return list_total_data, dict_total_data
 
 page_code, total_kinds = Naver_crawling_id()
-total, total_dict = Naver_crawling_data(page_code, total_kinds)
-print('ABCDEF')
-print(total)
+total_list, total_dict = Naver_crawling_data(page_code, total_kinds)
 
