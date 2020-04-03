@@ -8,14 +8,14 @@ class SQL_Table:
 
     def sql_connect(self):
         # SQL  연결하기
-        mydb = py.connect(host="localhost", user="root", password="5181",database="test", charset="utf8")
+        mydb = py.connect(host="localhost", user="root", password="5181", database="test", charset="utf8")
         # cursor 만들기
         conn = mydb.cursor()
-        return conn
+        return conn, mydb
 
 
-    def sql_table_DROP(self,conn):
-        for row_1 in total_kinds:
+    def sql_table_DROP(self,conn,kinds):
+        for row_1 in kinds:
             conn.execute(f"DROP TABLE {row_1}")
 
     def sql_table_CREATE(self,conn,kinds,dict):
@@ -32,12 +32,9 @@ class SQL_Table:
             else:
                 for row_2 in list(column_name[0]):
                     name.append(row_2)
-                    # 2차원 리스트로 각 물건종류의 keys 입력
+                # 2차원 리스트로 각 물건종류의 keys 입력
                 tatel.append(name)
 
-        print(tatel)
-        print('--------------------')
-        print(kinds)
 
         # table 생성하기
         count = 0
@@ -49,10 +46,41 @@ class SQL_Table:
                 conn.execute(f"ALTER TABLE {raw_1} ADD {tatel[count][raw_2]} VARCHAR(255)")
             count = count + 1
 
-    def sql_table_UPDATA(self):
-        print("미완성")
-        #데이터 입력
+        return tatel
 
+    def sql_table_UPDATA(self,conn,kinds,list,column_zero):
+
+        count_1 = 0
+        # table 이름 사용
+        for row_1 in kinds:
+            count_2 = 0
+            # 물건이 없는 경우
+            if list[count_1] == []:
+                conn.execute(f"INSERT INTO {row_1} (number) VALUE ({count_2+1})")
+                count_1 = count_1 + 1
+            else:
+                # 물건이 존재 하는경우
+                for row_2 in list[count_1]:
+                    # number 컬럼 순서 입력
+                    row_2.insert(0,str(count_2+1))
+                    del row_2[14]
+                    # 컬럼과 list 갯수 맞추기
+                    print(f"row_2 길이 : {len(row_2)}, column 길이 : {len(column_zero[count_1])}")
+                    if len(row_2) == len(column_zero[count_1])+1:
+                        print(row_2)
+                        print("---------------------")
+                        conn.execute(f"INSERT INTO {row_1} VALUES {tuple(row_2)} ")
+                        count_2 = count_2 + 1
+                    else:
+                        list_add_blank = (len(column_zero[count_1])+1) - len(row_2)
+                        for row_3 in range(0,list_add_blank):
+                            row_2.append(" ")
+                        print(row_2)
+                        print("------------------------")
+                        conn.execute(f"INSERT INTO {row_1} VALUES {tuple(row_2)} ")
+                        count_2 = count_2 + 1
+                count_1 = count_1 + 1
+                # count_1 : list 순서 / count_2 : list 안에 값들 순서
 
 
 
@@ -64,8 +92,11 @@ total_list, total_dict = Nc.Naver_crawling_data(page_code, total_kinds)
 
 #SQL 테이블 생성
 St = SQL_Table()
-con = St.sql_connect()
-St.sql_table_CREATE(con,total_kinds,total_dict)
+conn_body, mydb_body = St.sql_connect()
+St.sql_table_DROP(conn_body,total_kinds)
+column_kins = St.sql_table_CREATE(conn_body, total_kinds, total_dict)
+St.sql_table_UPDATA(conn_body, total_kinds, total_list, column_kins)
+mydb_body.commit()
 
 print("종료")
 
