@@ -4,7 +4,25 @@ import pymysql as py
 
 class SQL_Table:
     def __init__(self):
+        print("프로그램 시작")
+
+        print("크롤링 시작")
+        # 크롤링 데이터 import 하기
+        Nc = Naver_crawling.Naver()
+        page_code, total_kinds = Nc.Naver_crawling_id()
+        total_list, total_dict = Nc.Naver_crawling_data(page_code, total_kinds)
+
         print("테이블 생성")
+
+        # SQL 테이블 생성
+
+        conn_body, mydb_body = self.sql_connect()
+        self.sql_table_DROP(conn_body, total_kinds)
+        column_kins = self.sql_table_CREATE(conn_body, total_kinds, total_dict)
+        self.sql_table_UPDATA(conn_body, total_kinds, total_list, column_kins)
+        mydb_body.commit()
+
+        print("종료")
 
     def sql_connect(self):
         # SQL  연결하기
@@ -65,42 +83,21 @@ class SQL_Table:
                     row_2.insert(0,str(count_2+1))
                     del row_2[14]
                     # 컬럼과 list 갯수 맞추기
-                    print(f"row_2 길이 : {len(row_2)}, column 길이 : {len(column_zero[count_1])}")
+
                     if len(row_2) == len(column_zero[count_1])+1:
-                        print(row_2)
-                        print("---------------------")
                         conn.execute(f"INSERT INTO {row_1} VALUES {tuple(row_2)} ")
                         count_2 = count_2 + 1
                     else:
                         list_add_blank = (len(column_zero[count_1])+1) - len(row_2)
                         for row_3 in range(0,list_add_blank):
                             row_2.append(" ")
-                        print(row_2)
-                        print("------------------------")
                         conn.execute(f"INSERT INTO {row_1} VALUES {tuple(row_2)} ")
                         count_2 = count_2 + 1
                 count_1 = count_1 + 1
                 # count_1 : list 순서 / count_2 : list 안에 값들 순서
 
-
-
-
-# 크롤링 데이터 import 하기
-Nc = Naver_crawling.Naver()
-page_code, total_kinds = Nc.Naver_crawling_id()
-total_list, total_dict = Nc.Naver_crawling_data(page_code, total_kinds)
-
-#SQL 테이블 생성
-St = SQL_Table()
-conn_body, mydb_body = St.sql_connect()
-St.sql_table_DROP(conn_body,total_kinds)
-column_kins = St.sql_table_CREATE(conn_body, total_kinds, total_dict)
-St.sql_table_UPDATA(conn_body, total_kinds, total_list, column_kins)
-mydb_body.commit()
-
-print("종료")
-
-
+# class 시작
+SQL_Table()
 
 
 
