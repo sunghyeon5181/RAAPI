@@ -1,21 +1,10 @@
-# 20.03.01
-# 
-# Anthor : sunghyeon5181, nicesick
-# 
-# To-Do list
-# 
-# 1.  2번째 테이플 감정가 가져오기(각 물건 종류에 따라 변경)
-#
-# 2.  sql에 데이터 입력 방법
-# 
-# 3.
 
 from selenium import webdriver
 import time
 
 class Naver:
     def __init__(self):
-        print("실행")
+        print("Naver 실행")
 
     def Naver_crawling_id(self):
 
@@ -99,8 +88,8 @@ class Naver:
 
                     else:
                         next_number = driver.find_element_by_css_selector(f'#page_navi > div.pagnavi > a:nth-child({row_2 +1})')
-                        print(row_2+1)
-                        print('-------------')
+                        # print(row_2+1)
+                        # print('-------------')
                         next_number.click()
                 # "다음" 버튼 클릭하기
                 Daum_page = driver.find_element_by_css_selector('#page_navi > div > a.next')
@@ -185,7 +174,7 @@ class Naver:
                             pass
                         else:
                             next_number = driver.find_element_by_css_selector(f'#page_navi > div > a:nth-child({next_number_atag[count]})')
-                            print(next_number.text)
+                            # print(next_number.text)
                             next_number.click()
                             count = count + 1
                     # "다음" 클릭하기
@@ -279,6 +268,9 @@ class Naver:
                         for th_list, td_list in zip(th_lists, td_lists):
                             data_dict[th_list.text] = td_list.text
                             data_list.append(td_list.text)
+
+                        # to do : 매각기일 내역 에서 마지막 차 (tr class="last") 부분 따로 크롤링 해서 list에 append하고 테이블 데이터 갯수 맞춰주기
+
                     kind = first_table.find_element_by_css_selector('tr:nth-child(2) > td:nth-child(2)')
                     del data_dict['매각\n기일내역']
                 # class:section_tbl 두번째 테이플
@@ -291,7 +283,7 @@ class Naver:
 
             # 물건 종류가 위의 물건 종류 name에 있으면 그 리스트 index를 받아서 total 리스트 2차원 공간에 입력(물건종류 순서랑 같게 나열 하고자)
             kinds = kind.text
-            print(kinds)
+            # print(kinds)
             kinds_1 = kinds.split('(')
 
             if kinds_1[0] =="다세대":
@@ -310,8 +302,8 @@ class Naver:
             list_total_data[index].append(data_list)
             dict_total_data[index].append(data_dict)
             count_1 = count_1 + 1
-            print(count_1)
-            print('-------------')
+            # print(count_1)
+            # print('-------------')
 
 
         return list_total_data, dict_total_data
