@@ -6,6 +6,11 @@ class Naver:
     def __init__(self):
         print("Naver 실행")
 
+        
+    def testexe(self):
+        a ,b = Naver_crawling_id()
+        Naver_crawling_data(a,b)
+        
     def Naver_crawling_id(self):
 
         # 크롭 웹 페이지 연결
