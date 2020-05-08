@@ -4,7 +4,7 @@ import time
 
 class Naver:
     def __init__(self):
-        print("Naver 실행")
+        print('Naver실행')
 
     def Naver_crawling_id(self):
 
@@ -268,9 +268,20 @@ class Naver:
                         for th_list, td_list in zip(th_lists, td_lists):
                             data_dict[th_list.text] = td_list.text
                             data_list.append(td_list.text)
+                    # 테이블 안에 테이블(최저 매각 가격 적혀 있는 곳)
+                    sale_table = first_table.find_element_by_css_selector('tr:nth-child(5) > td:nth-child(2) > table.sale_deatil')
+                    # 안에 테이블의 thead의 th값과 tbody안에 마지막(last) 경매 가격
+                    head_th = sale_table.find_elements_by_css_selector('thead > tr > th')
+                    body_td = sale_table.find_elements_by_css_selector('tbody > tr.last > td')
 
-                        # to do : 매각기일 내역 에서 마지막 차 (tr class="last") 부분 따로 크롤링 해서 list에 append하고 테이블 데이터 갯수 맞춰주기
+                    for th_list, td_list in zip(head_th, body_td):
+                        data_list.append(td_list.text)
+                        last_th_list = th_list.text +'_last'
+                        data_dict[last_th_list] = td_list.text
 
+
+
+                    # to do : 매각기일 내역 에서 마지막 차 (tr class="last") 부분 따로 크롤링 해서 list에 append하고 테이블 데이터 갯수 맞춰주기
                     kind = first_table.find_element_by_css_selector('tr:nth-child(2) > td:nth-child(2)')
                     del data_dict['매각\n기일내역']
                 # class:section_tbl 두번째 테이플
@@ -283,7 +294,7 @@ class Naver:
 
             # 물건 종류가 위의 물건 종류 name에 있으면 그 리스트 index를 받아서 total 리스트 2차원 공간에 입력(물건종류 순서랑 같게 나열 하고자)
             kinds = kind.text
-            # print(kinds)
+            print(kinds)
             kinds_1 = kinds.split('(')
 
             if kinds_1[0] =="다세대":
@@ -299,12 +310,14 @@ class Naver:
                 index = kinds_name_list.index(kinds_1[0])
 
 
+
             list_total_data[index].append(data_list)
             dict_total_data[index].append(data_dict)
             count_1 = count_1 + 1
-            # print(count_1)
-            # print('-------------')
+            print(count_1)
+            print('-------------')
 
 
         return list_total_data, dict_total_data
 
+Naver()
