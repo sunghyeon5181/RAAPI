@@ -26,6 +26,7 @@ class SQL_Table:
 
     def sql_connect(self):
         # SQL  연결하기
+        # to do : connect 모든 테이블에 가능하게
         mydb = py.connect(host="localhost", user="root", password="5181", database="test", charset="utf8")
         # cursor 만들기
         conn = mydb.cursor()
@@ -61,6 +62,7 @@ class SQL_Table:
             conn.execute(f"CREATE TABLE {raw_1}(number VARCHAR(10))")
             for raw_2 in range(0,len(tatel[count])):
                 # 딕셔너리 key값을 컬럼으로 추가
+                # to-do : 컬럼 갯수 list랑 dict랑 같게 만들기
                 conn.execute(f"ALTER TABLE {raw_1} ADD {tatel[count][raw_2]} VARCHAR(255)")
             count = count + 1
 
@@ -83,6 +85,7 @@ class SQL_Table:
                     row_2.insert(0,str(count_2+1))
                     del row_2[14]
                     # 컬럼과 list 갯수 맞추기
+                    # to-do : 컬럼 갯수와 list 갯수 맞추기
 
                     if len(row_2) == len(column_zero[count_1])+1:
                         conn.execute(f"INSERT INTO {row_1} VALUES {tuple(row_2)} ")
